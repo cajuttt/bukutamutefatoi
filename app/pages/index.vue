@@ -13,23 +13,40 @@
           </form>
         </div>
       </div>
+
       <table id="table">
         <thead>
           <tr>
             <th>No</th>
             <th>Tanggal</th>
             <th>Nama Lengkap</th>
-            <th>Nomor Telepon</th>
             <th>Alamat / Instansi</th>
             <th>Tujuan Kunjungan</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="(record, i) in records" :key="record.id">
+        <tbody> 
+          <tr v-if="!isLoading && records.length < 1">
+            <td colspan="5" class="p-5 text-center">
+              <h1>🤔</h1>
+              Tidak ditemukan
+            </td>
+          </tr>
+          <tr v-if="isError">
+            <td colspan="5" class="p-5 text-center">
+              <h1>🥲</h1>
+              Terjadi kesalahan, silahkan periksa jaringan internet lalu refresh halaman
+            </td>
+          </tr>
+          <tr v-if="isLoading">
+            <td colspan="5" class="p-5 text-center">
+              <h1>🙏🏻</h1>
+              Sedang memuat...
+            </td>
+          </tr>
+          <tr v-else v-for="(record, i) in records" :key="record.id">
             <td>{{ i+1 }}.</td>
             <td>{{ record.tanggal }}</td>
             <td>{{ record.nama }}</td>
-            <td>{{ record.nomor }}</td>
             <td>{{ record.alamat }}</td>
             <td>{{ record.tujuan_kunjungan }}</td>
           </tr>
@@ -60,7 +77,7 @@
                 <input v-model="form.nama" type="text" class="form-control form-control-lg" placeholder="Nama Lengkap" required>
               </div>
               <div class="mb-4">
-                <label for="nomor">Nomor Telepon</label>
+                <label for="nomor">Nomor HP/telepon <span class="text-muted">(tidak akan dipublikasi)</span></label>
                 <input v-model="form.nomor" type="text" class="form-control form-control-lg" placeholder="Nomor Telepon" required>
               </div>
               <div class="mb-4">
@@ -101,6 +118,8 @@ const records = ref([])
 const page = ref(1)
 const pageSize = 30
 const keyword = ref('')
+const isLoading = ref(true)
+const isError = ref(false)
 
 async function submitForm() {
   console.log('Submitting form:', form.value)
@@ -124,6 +143,8 @@ async function submitForm() {
 async function fetchData() {
   const from = (page.value - 1) * pageSize
   const to = from + pageSize - 1
+  isLoading.value = true
+  isError.value = false
 
   if(keyword.value.length > 0) {
     const { data, error } = await client
@@ -135,12 +156,19 @@ async function fetchData() {
     
     if (error) {
       console.error('Error fetching data:', error)
-    } else {
+      isLoading.value = false
+      isError.value = true
+    } 
+    if(data) {
       records.value = data
+      isLoading.value = false
+      isError.value = false
     }
     return
   }
   else {
+    isLoading.value = true
+    isError.value = false
     const { data, error } = await client
       .from('bukutamutoi')
       .select('*')
@@ -149,8 +177,13 @@ async function fetchData() {
     
     if (error) {
       console.error('Error fetching data:', error)
-    } else {
+      isLoading.value = false
+      isError.value = true
+    } 
+    if(data) {
       records.value = data
+      isLoading.value = false
+      isError.value = false
     }
   }
 }
