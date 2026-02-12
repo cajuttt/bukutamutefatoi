@@ -1,0 +1,16 @@
+{
+  "name": "bukutamu",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@nuxtjs/supabase": "^2.0.3",
+    "bootstrap": "^5.3.8",
+    "nuxt": "^4.3.0"
+  }
+}
